@@ -1,4 +1,8 @@
-﻿using DonationManagmentServer.Services;
+﻿using System.IO;
+using Amazon;
+using Amazon.S3;
+using Amazon.S3.Transfer;
+using DonationManagmentServer.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DonationManagmentServer.Controllers
@@ -8,27 +12,48 @@ namespace DonationManagmentServer.Controllers
     public class FilesController : ControllerBase
     {
         private readonly S3Service _s3Service;
-
-        public FilesController(S3Service s3Service)
+        private readonly IAmazonS3 _s3Client;
+        private readonly string? _bucketName;
+        public FilesController(S3Service s3service)
         {
-            _s3Service = s3Service;
+            _s3Service = s3service;
         }
 
-        [HttpPost("upload")]
+        //public FilesController()
+        //{
+        //    string regoin = RegionEndpoint.EUNorth1.SystemName;
+        //    this._bucketName = "donationreceipts";
+        //    _s3Client = new AmazonS3Client(
+        //        "AKIA5FCD6HSX2VZ4RTXW",
+        //        "a5IgoT64REWAh944/qayVdxEuCt237jeWh/nvXZ1",
+        //        Amazon.RegionEndpoint.GetBySystemName(regoin)
+        //    );
+        //}
+
+        // GET: api/files
+        [HttpGet]
+        public async Task<ActionResult> GetUrl()
+        {
+            return Ok(new { Url = "fileUrl" });
+        }
+
+        // POST: api/Files
+        [HttpPost]
         public async Task<IActionResult> UploadFile(IFormFile file)
         {
             if (file == null || file.Length == 0)
                 return BadRequest("File is empty");
 
-            var fileUrl = await _s3Service.UploadFileAsync(file);
+            //var fileUrl = await _s3Service.UploadFileAsync(file);
+            var uniqueKey = await _s3Service.UploadFileAsync(file);
 
-            //this.SaveFileMetadata()
-            return Ok(new { Url = fileUrl });
+            return Ok(new { Key = uniqueKey, Message = "File uploaded successfully!" });
+
         }
 
-        public async Task SaveFileMetadata(string fileName, string fileUrl, int userId)
-        {
-            // Your logic to save metadata in SQL Server
-        }
+        //public async Task SaveFileMetadata(string fileName, string fileUrl, int userId = 0)
+        //{
+        //    // Your logic to save metadata in SQL Server
+        //}
     }
 }
