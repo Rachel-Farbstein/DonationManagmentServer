@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using DonationManagmentServer.Models;
+using DonationManagmentServer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,8 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContext<DonationContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<S3Service>();
 
 var policy = "CorsPolicy";
 builder.Services.AddCors(options =>
