@@ -1,6 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using DonationManagmentServer.Models;
 using DonationManagmentServer.Services;
+using DonationManagmentServer.Repisotories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using NuGet.Protocol;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,21 +15,81 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 builder.Services.AddDbContext<DonationContext>(options =>
-options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
 
 builder.Services.AddScoped<S3Service>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<DonorService>();
+builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<DonorRepository>();
 
-var policy = "CorsPolicy";
+// Add JWT
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = "https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_FG2yYZFrc";
+        //options.TokenValidationParameters.NameClaimType = "sub";
+
+        //options.TokenValidationParameters.IssuerSigningKeyResolver = (token, securityToken, kid, validationParameters) =>
+        //{
+        //    var client = new HttpClient();
+        //    var jwks = client.GetStringAsync("https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_FG2yYZFrc/.well-known/jwks.json").Result;
+        //    return new JsonWebKeySet(jwks).GetSigningKeys();
+        //};
+
+        //options.TokenValidationParameters = new TokenValidationParameters
+        //{
+        //    ValidateIssuer = true,
+        //    ValidateAudience = true,
+        //    ValidateLifetime = true,
+        //    ValidateIssuerSigningKey = true,
+        //    ValidIssuer = "https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_FG2yYZFrc",
+        //    ValidAudiences = new[] { "1s6o9ut1ajuqqbenev2k0i5r3m" }
+        //};
+
+
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = false, // ביטול אימות Audience
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = "https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_FG2yYZFrc"
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine($"Authentication failed: {context.Exception.Message}");
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = context =>
+            {
+                Console.WriteLine("Token validated successfully.");
+                return Task.CompletedTask;
+            },
+            OnChallenge = context =>
+            {
+                Console.WriteLine($"Challenge triggered: {context.AuthenticateFailure?.Message}");
+                return Task.CompletedTask;
+            }
+        };
+
+    });
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(policy, policyBuilder => policyBuilder
-            .AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            //.AllowCredentials()
-            );
-
+    options.AddPolicy("AllowSpecificOrigins", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
 });
+
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -38,11 +104,59 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors(policy);
+
+app.UseCors("AllowSpecificOrigins");
+app.UseAuthentication();
+app.UseAuthorization();
+
+//app.Use(async (context, next) =>
+//{
+//    if (context.Request.Headers.ContainsKey("Authorization"))
+//    {
+//        // קבלת הטוקן מכותרת Authorization
+//        var authorizationHeader = context.Request.Headers["Authorization"].ToString();
+
+//        if (string.IsNullOrEmpty(authorizationHeader))
+//        {
+//            Console.WriteLine("Authorization header is missing.");
+//            return;
+//        }
+
+//        // הסרת 'Bearer ' מהתחלת הערך
+//        var token = authorizationHeader.StartsWith("Bearer ")
+//            ? authorizationHeader.Substring("Bearer ".Length).Trim()
+//            : authorizationHeader;
+
+//        Console.WriteLine($"Received token: {token}");
+
+//        try
+//        {
+//            // קריאת הטוקן
+//            var handler = new JwtSecurityTokenHandler();
+//            if (!handler.CanReadToken(token))
+//            {
+//                Console.WriteLine("The token format is invalid.");
+//                return;
+//            }
+
+//            var jwtToken = handler.ReadJwtToken(token);
+
+//            //if (jwtToken != null)
+//            //{
+//            //    var identity = new ClaimsIdentity(jwtToken.Claims, "jwt");
+//            //    context.User = new ClaimsPrincipal(identity);
+//            //}
+
+//            await next();
+//        }
+//        catch (Exception ex)
+//        {
+//            Console.WriteLine($"Error while processing token: {ex.Message}");
+//        }
+//    }
+//});
 
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
 
 app.MapControllers();
 

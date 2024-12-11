@@ -19,16 +19,6 @@ namespace DonationManagmentServer.Controllers
             _s3Service = s3service;
         }
 
-        //public FilesController()
-        //{
-        //    string regoin = RegionEndpoint.EUNorth1.SystemName;
-        //    this._bucketName = "donationreceipts";
-        //    _s3Client = new AmazonS3Client(
-        //        "AKIA5FCD6HSX2VZ4RTXW",
-        //        "a5IgoT64REWAh944/qayVdxEuCt237jeWh/nvXZ1",
-        //        Amazon.RegionEndpoint.GetBySystemName(regoin)
-        //    );
-        //}
 
         // GET: api/files
         [HttpGet]
