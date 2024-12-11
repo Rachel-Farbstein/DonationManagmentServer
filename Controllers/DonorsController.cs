@@ -6,32 +6,41 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using DonationManagmentServer.Models;
+using DonationManagmentServer.Services;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DonationManagmentServer.Controllers
 {
-    [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
+    [Route("api/[controller]")]
     public class DonorsController : ControllerBase
     {
-        private readonly DonationContext _context;
+        private readonly DonorService _donorService;
+        private readonly UserService _userService;
 
-        public DonorsController(DonationContext context)
+        public DonorsController(DonorService donorService, UserService userService)
         {
-            _context = context;
+            _donorService = donorService;
+            _userService = userService;
         }
 
         // GET: api/Donors
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Donor>>> GetDonor()
+        public async Task<ActionResult<IEnumerable<Donor>>> GetDonors()
         {
-            return await _context.Donor.ToListAsync();
+            var userId = await _userService.getUserIdByToken(User);
+            var donors = await _donorService.GetDonors(userId);
+            return Ok(donors);
         }
+
 
         // GET: api/Donors/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Donor>> GetDonor(int id)
+        public async Task<ActionResult<Donor>> GetDonor(int donorId)
         {
-            var donor = await _context.Donor.FindAsync(id);
+            var donor = await _donorService.GetDonorByIdAsync(donorId);
 
             if (donor == null)
             {
@@ -44,30 +53,14 @@ namespace DonationManagmentServer.Controllers
         // PUT: api/Donors/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutDonor(int id, Donor donor)
+        public async Task<IActionResult> PutDonor(int donorId, Donor donor)
         {
-            if (id != donor.Id)
+            if (donorId != donor.DonorId)
             {
                 return BadRequest();
             }
 
-            _context.Entry(donor).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!DonorExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            await _donorService.UpdateDonorAsync(donor);
 
             return NoContent();
         }
@@ -75,14 +68,24 @@ namespace DonationManagmentServer.Controllers
         // POST: api/Donors
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Donor>> PostDonor(Donor donor)
+        public async Task<ActionResult<Donor>> PostDonor(DonorDto donorDto)
         {
-            _context.Donor.Add(donor);
-            await _context.SaveChangesAsync();
+            var userId = await _userService.getUserIdByToken(User);
 
-            return CreatedAtAction("GetDonor", new { id = donor.Id }, donor);
+            Donor donor = new Donor()
+            {
+                DonorId = donorDto.DonorId,
+                UserId = userId,
+                FullName = donorDto.FullName,
+                Email = donorDto.Email,
+                Address = donorDto.Address,
+                Phone = donorDto.Phone,
+            };
+
+            await _donorService.AddDonorAsync(donor);
+
+            return CreatedAtAction("GetDonor", new { id = donor.DonorId }, donor);
         }
-
 
 
         [HttpPost("delete-donors")]
@@ -93,51 +96,42 @@ namespace DonationManagmentServer.Controllers
                 return BadRequest("No donors IDs provided.");
             }
 
-            try
-            {
-                var donorList = _context.Donor.Where(d => donorIds.Contains(d.Id)).ToList();
+            return NoContent();
+            //try
+            //{
+            //    var donorList = _context.Donor.Where(d => donorIds.Contains(d.Id)).ToList();
 
-                if (donorList.Count == 0)
-                {
-                    return NotFound("No matching products found.");
-                }
+            //    if (donorList.Count == 0)
+            //    {
+            //        return NotFound("No matching products found.");
+            //    }
 
-                _context.Donor.RemoveRange(donorList);
-                await _context.SaveChangesAsync();
+            //    _context.Donor.RemoveRange(donorList);
+            //    await _context.SaveChangesAsync();
 
-                return Ok(new { Message = $"{donorList.Count} products deleted successfully." });
-            }
-            catch (Exception ex)
-            {
-                // Log the error
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            //    return Ok(new { Message = $"{donorList.Count} products deleted successfully." });
+            //}
+            //catch (Exception ex)
+            //{
+            //    // Log the error
+            //    return StatusCode(500, $"Internal server error: {ex.Message}");
+            //}
         }
-
-
-
 
 
         // DELETE: api/Donors/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteDonor(int id)
+        public async Task<IActionResult> DeleteDonor(int donorId)
         {
-            var donor = await _context.Donor.FindAsync(id);
+            var donor = await _donorService.GetDonorByIdAsync(donorId);
             if (donor == null)
             {
                 return NotFound();
             }
 
-            _context.Donor.Remove(donor);
-            _context.Donor.Remove(donor);
-            await _context.SaveChangesAsync();
+            await _donorService.DeleteDonorAsync(donorId);
 
             return NoContent();
-        }
-
-        private bool DonorExists(int id)
-        {
-            return _context.Donor.Any(e => e.Id == id);
         }
     }
 }
