@@ -10,6 +10,8 @@ using NuGet.Protocol;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var configuration = builder.Configuration;
+
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -18,6 +20,7 @@ builder.Services.AddDbContext<DonationContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
 
 builder.Services.AddScoped<S3Service>();
 builder.Services.AddScoped<UserService>();
@@ -29,27 +32,7 @@ builder.Services.AddScoped<DonorRepository>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Authority = "https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_FG2yYZFrc";
-        //options.TokenValidationParameters.NameClaimType = "sub";
-
-        //options.TokenValidationParameters.IssuerSigningKeyResolver = (token, securityToken, kid, validationParameters) =>
-        //{
-        //    var client = new HttpClient();
-        //    var jwks = client.GetStringAsync("https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_FG2yYZFrc/.well-known/jwks.json").Result;
-        //    return new JsonWebKeySet(jwks).GetSigningKeys();
-        //};
-
-        //options.TokenValidationParameters = new TokenValidationParameters
-        //{
-        //    ValidateIssuer = true,
-        //    ValidateAudience = true,
-        //    ValidateLifetime = true,
-        //    ValidateIssuerSigningKey = true,
-        //    ValidIssuer = "https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_FG2yYZFrc",
-        //    ValidAudiences = new[] { "1s6o9ut1ajuqqbenev2k0i5r3m" }
-        //};
-
-
+        options.Authority = configuration["AWS:Authority"];
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -57,7 +40,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = false, // ביטול אימות Audience
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = "https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_FG2yYZFrc"
+            ValidIssuer = configuration["AWS:Authority"],
         };
         options.Events = new JwtBearerEvents
         {
