@@ -15,13 +15,10 @@ namespace DonationManagmentServer.Services
         public S3Service(IConfiguration configuration)
         {
 
-            //string regoin = RegionEndpoint.EUNorth1.SystemName;
-
             _bucketName = configuration["AWS:BucketName"];
             _s3Client = new AmazonS3Client(
                 configuration["AWS:AccessKey"],
                 configuration["AWS:SecretKey"],
-            //Amazon.RegionEndpoint.GetBySystemName(regoin)
             Amazon.RegionEndpoint.GetBySystemName(configuration["AWS:Region"])
             );
         }
