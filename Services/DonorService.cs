@@ -27,9 +27,9 @@ namespace DonationManagmentServer.Services
             return await _donorRepository.GetDonors(userId);
         }
 
-        public async Task<Donor?> GetDonorByIdAsync(int id)
+        public async Task<Donor?> GetDonorByIdAsync(int donorId)
         {
-            return await _donorRepository.GetDonorByIdAsync(id);
+            return await _donorRepository.GetDonorByIdAsync(donorId);
         }
 
 
@@ -41,6 +41,11 @@ namespace DonationManagmentServer.Services
         public async Task DeleteDonorAsync(int donorId)
         {
             await _donorRepository.DeleteDonorAsync(donorId);
+        }
+
+        public async Task DeleteDonorsAsync(List<int> donorIds)
+        {
+            await _donorRepository.DeleteDonorsAsync(donorIds);
         }
 
     }
