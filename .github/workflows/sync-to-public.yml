@@ -1,0 +1,22 @@
+name: Sync to Public Repository
+
+on:
+  push:
+    branches:
+      - main # מפעיל את ה-Workflow כשיש שינויים ב-branch main
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Push to public repository
+        env:
+          GITHUB_TOKEN: ${{ secrets.Sync-Private-Public-Servrer-Repos }}
+        run: |
+          git config --global user.name "Rachel-Farbstein"
+          git config --global user.email "rachely7331@gmail.com"
+          git remote add public https://<GITHUB_TOKEN>@github.com/Rachel-Farbstein/DonationManagmentServerPublic.git
+          git push -u public main --force
