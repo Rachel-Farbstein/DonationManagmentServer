@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace DonationManagmentServer.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class UsersController : ControllerBase

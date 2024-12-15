@@ -9,10 +9,11 @@ using DonationManagmentServer.Models;
 using DonationManagmentServer.Services;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using DonationManagmentServer.Models.DTO;
 
 namespace DonationManagmentServer.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class DonorsController : ControllerBase
@@ -38,7 +39,7 @@ namespace DonationManagmentServer.Controllers
 
         // GET: api/Donors/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Donor>> GetDonor(int donorId)
+        public async Task<ActionResult<Donor>> GetDonor( int donorId)
         {
             var donor = await _donorService.GetDonorByIdAsync(donorId);
 
@@ -52,13 +53,15 @@ namespace DonationManagmentServer.Controllers
 
         // PUT: api/Donors/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutDonor(int donorId, Donor donor)
+        [HttpPut("{donorId}")]
+        public async Task<IActionResult> PutDonor(int donorId, DonorDto donorDto)
         {
-            if (donorId != donor.DonorId)
+            if (donorId != donorDto.DonorId)
             {
                 return BadRequest();
             }
+
+            var donor = await this.setDonorFromDonorDto(donorDto);
 
             await _donorService.UpdateDonorAsync(donor);
 
@@ -70,18 +73,8 @@ namespace DonationManagmentServer.Controllers
         [HttpPost]
         public async Task<ActionResult<Donor>> PostDonor(DonorDto donorDto)
         {
-            var userId = await _userService.getUserIdByToken(User);
 
-            Donor donor = new Donor()
-            {
-                DonorId = donorDto.DonorId,
-                UserId = userId,
-                FullName = donorDto.FullName,
-                Email = donorDto.Email,
-                Address = donorDto.Address,
-                Phone = donorDto.Phone,
-            };
-
+            var donor = await this.setDonorFromDonorDto(donorDto);
             await _donorService.AddDonorAsync(donor);
 
             return CreatedAtAction("GetDonor", new { id = donor.DonorId }, donor);
@@ -96,32 +89,24 @@ namespace DonationManagmentServer.Controllers
                 return BadRequest("No donors IDs provided.");
             }
 
-            return NoContent();
-            //try
-            //{
-            //    var donorList = _context.Donor.Where(d => donorIds.Contains(d.Id)).ToList();
+            try
+            {
+                await _donorService.DeleteDonorsAsync(donorIds);
 
-            //    if (donorList.Count == 0)
-            //    {
-            //        return NotFound("No matching products found.");
-            //    }
-
-            //    _context.Donor.RemoveRange(donorList);
-            //    await _context.SaveChangesAsync();
-
-            //    return Ok(new { Message = $"{donorList.Count} products deleted successfully." });
-            //}
-            //catch (Exception ex)
-            //{
-            //    // Log the error
-            //    return StatusCode(500, $"Internal server error: {ex.Message}");
-            //}
+                return Ok(new { Message = $"{donorIds.Count} products deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                // Log the error
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
 
 
+
         // DELETE: api/Donors/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteDonor(int donorId)
+        [HttpDelete("{donorId}")]
+        public async Task<IActionResult> DeleteDonor([FromRoute] int donorId)
         {
             var donor = await _donorService.GetDonorByIdAsync(donorId);
             if (donor == null)
@@ -132,6 +117,23 @@ namespace DonationManagmentServer.Controllers
             await _donorService.DeleteDonorAsync(donorId);
 
             return NoContent();
+        }
+
+        private async Task<Donor> setDonorFromDonorDto(DonorDto donorDto)
+        {
+            var userId = await _userService.getUserIdByToken(User);
+
+            Donor donor = new Donor()
+            {
+                DonorId = donorDto.DonorId,
+                UserId = userId,
+                FullName = donorDto.FullName,
+                Email = donorDto.Email,
+                Address = donorDto.Address,
+                Phone = donorDto.Phone,
+            };
+
+            return donor;
         }
     }
 }

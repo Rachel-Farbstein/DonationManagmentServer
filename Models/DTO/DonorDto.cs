@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace DonationManagmentServer.Models
+namespace DonationManagmentServer.Models.DTO
 {
     public class DonorDto
     {

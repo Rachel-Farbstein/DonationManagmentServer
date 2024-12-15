@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using DonationManagmentServer.Models;
 using DonationManagmentServer.Services;
 using Microsoft.EntityFrameworkCore;
@@ -25,9 +26,9 @@ namespace DonationManagmentServer.Repisotories
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<Donor?> GetDonorByIdAsync(int id)
+        public async Task<Donor?> GetDonorByIdAsync(int donorId)
         {
-            return await _dbContext.Donor.FirstOrDefaultAsync(d => d.DonorId == id);
+            return await _dbContext.Donor.FirstOrDefaultAsync(d => d.DonorId == donorId);
         }
 
         public async Task UpdateDonorAsync(Donor donor)
@@ -45,6 +46,19 @@ namespace DonationManagmentServer.Repisotories
                 await _dbContext.SaveChangesAsync();
             }
         }
+
+        public async Task DeleteDonorsAsync(List<int> donorIds)
+        {
+
+            var donorList = _dbContext.Donor.Where(d => donorIds.Contains(d.DonorId)).ToList();
+            if (donorList.Any())
+            {
+                _dbContext.Donor.RemoveRange(donorList);
+                await _dbContext.SaveChangesAsync();
+            }
+
+        }
+
 
     }
 }
