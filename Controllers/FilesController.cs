@@ -13,10 +13,13 @@ namespace DonationManagmentServer.Controllers
     {
         private readonly S3Service _s3Service;
         private readonly IAmazonS3 _s3Client;
-        private readonly string? _bucketName;
-        public FilesController(S3Service s3service)
+        private readonly UserService _userService;
+
+        //private readonly string? _bucketName;
+        public FilesController(S3Service s3service, UserService userService)
         {
             _s3Service = s3service;
+            _userService = userService;
         }
 
 
@@ -34,8 +37,8 @@ namespace DonationManagmentServer.Controllers
             if (file == null || file.Length == 0)
                 return BadRequest("File is empty");
 
-            //var fileUrl = await _s3Service.UploadFileAsync(file);
-            var uniqueKey = await _s3Service.UploadFileAsync(file);
+            var userId = await _userService.getUserIdByToken(User);
+            var uniqueKey = await _s3Service.UploadFileAsync(userId,file);
 
             return Ok(new { Key = uniqueKey, Message = "File uploaded successfully!" });
 

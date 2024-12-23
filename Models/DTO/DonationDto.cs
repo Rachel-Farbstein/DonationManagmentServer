@@ -9,6 +9,7 @@ namespace DonationManagmentServer.Models.DTO
         public DateTime DonationDate { get; set; }
         public decimal Amount { get; set; }
         public PaymentType PaymentType { get; set; }
+        public string? Notes { get; set; }
     }
 
 }

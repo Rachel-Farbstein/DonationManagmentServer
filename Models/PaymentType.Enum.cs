@@ -1,11 +1,11 @@
 ﻿namespace DonationManagmentServer.Models
 {
-    public enum PaymentType
+    public enum PaymentType : byte
     {
-        BankTransfer = '1',
-        StandingOrder = '2',
-        Cash = '3',
-        Check = '4',
-        CreditCard = '5'
+        BankTransfer = 1,
+        StandingOrder = 2,
+        Cash = 3,
+        Check = 4,
+        CreditCard = 5
     }
 }

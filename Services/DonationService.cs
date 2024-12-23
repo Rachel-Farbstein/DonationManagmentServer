@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using DonationManagmentServer.Models;
+using DonationManagmentServer.Models.DTO;
 using DonationManagmentServer.Repisotories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,9 +11,9 @@ namespace DonationManagmentServer.Services
     public class DonationService
     {
 
-        private readonly DonationRepisotory _donationRepository;
+        private readonly DonationRepository _donationRepository;
         private readonly UserService _userService;
-        public DonationService(DonationRepisotory donationRepository, UserService userService)
+        public DonationService(DonationRepository donationRepository, UserService userService)
         {
             _donationRepository = donationRepository;
             _userService = userService;
@@ -22,6 +23,11 @@ namespace DonationManagmentServer.Services
         public async Task<IEnumerable<Donation>> GetDonations(int userId)
         {
             return await _donationRepository.GetDonationsAsync(userId);
+        }
+
+        public IEnumerable<DonationWithDonorNameDto> GetDonationsWithDonorName(int userId)
+        {
+            return _donationRepository.GetDonationsWithDonorName(userId);
         }
 
         public async Task<Donation?> GetDonationByIdAsync(int donationID)

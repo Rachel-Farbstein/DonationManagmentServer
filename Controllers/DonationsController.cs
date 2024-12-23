@@ -31,9 +31,33 @@ namespace DonationManagmentServer.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Donation>>> GetDonations()
         {
-            var userId = await _userService.getUserIdByToken(User);
-            var donations = await _donationService.GetDonations(userId);
-            return Ok(donations);
+            try
+            {
+                var userId = await _userService.getUserIdByToken(User);
+                var donations = await _donationService.GetDonations(userId);
+                return Ok(donations);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
+
+        [HttpGet("get-donations-with-donors")]
+        public async Task<ActionResult<IEnumerable<DonationWithDonorNameDto>>> GetDonationsWithDonors()
+        {
+            try
+            {
+                var userId = await _userService.getUserIdByToken(User);
+                var donations = _donationService.GetDonationsWithDonorName(userId);
+                return Ok(donations);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
         // GET: api/Donations
@@ -60,7 +84,7 @@ namespace DonationManagmentServer.Controllers
 
         // PUT: api/Donation/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
+        [HttpPut("{donationId}")]
         public async Task<IActionResult> PutDonation(int donationId, DonationDto donationDto)
         {
             if (donationId != donationDto.DonationId)
@@ -78,10 +102,10 @@ namespace DonationManagmentServer.Controllers
         // POST: api/Donations
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Donation>> PostDonation(DonationDto donationDto)
+        public async Task<ActionResult<Donation>> PostDonation(Donation donation)
         {
 
-            var donation = await this.setDonationFromDonationDto(donationDto);
+            //var donation = await this.setDonationFromDonationDto(donationDto);
             await _donationService.AddDonationAsync(donation);
 
             return CreatedAtAction("GetDonation", new { id = donation.DonationId }, donation);
@@ -111,7 +135,7 @@ namespace DonationManagmentServer.Controllers
 
 
         // DELETE: api/Donations/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{donationId}")]
         public async Task<IActionResult> DeleteDonation(int donationId)
         {
             var donation = await _donationService.GetDonationByIdAsync(donationId);
@@ -133,10 +157,10 @@ namespace DonationManagmentServer.Controllers
             {
                 DonationId = donationDto.DonationId,
                 DonorId = donationDto.DonorId,
-                UserId = userId,
                 Amount = donationDto.Amount,
                 DonationDate = donationDto.DonationDate,
                 PaymentType = donationDto.PaymentType,
+                Notes = donationDto.Notes
             };
 
             return donation;
