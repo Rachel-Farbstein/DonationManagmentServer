@@ -25,8 +25,10 @@ builder.Services.AddDbContext<DonationContext>(options =>
 builder.Services.AddScoped<S3Service>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<DonorService>();
+builder.Services.AddScoped<DonationService>();
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<DonorRepository>();
+builder.Services.AddScoped<DonationRepository>();
 
 // Add JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

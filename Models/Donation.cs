@@ -7,18 +7,14 @@ namespace DonationManagmentServer.Models
     {
         public int DonationId { get; set; }
         public int DonorId { get; set; }
-        public int UserId { get; set; }
         public DateTime DonationDate { get; set; }
         public decimal Amount { get; set; }
         public PaymentType PaymentType { get; set; }
-
-
-        [ForeignKey("UserId")]
-        public User User { get; set; }
+        public string? Notes { get; set; }
 
 
         [ForeignKey("DonorId")]
-        public Donor Donor { get; set; }
+        public Donor? Donor { get; set; }
     }
 
 }

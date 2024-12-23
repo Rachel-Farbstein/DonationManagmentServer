@@ -1,23 +1,44 @@
 ﻿using System;
 using System.Drawing;
 using DonationManagmentServer.Models;
+using DonationManagmentServer.Models.DTO;
 using DonationManagmentServer.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Any;
 
 namespace DonationManagmentServer.Repisotories
 {
-    public class DonationRepisotory
+    public class DonationRepository
     {
         private readonly DonationContext _dbContext;
 
-        public DonationRepisotory(DonationContext dbContext)
+        public DonationRepository(DonationContext dbContext)
         {
             _dbContext = dbContext;
         }
 
         public async Task<IEnumerable<Donation>> GetDonationsAsync(int userId)
         {
-            return await _dbContext.Donations.Where(d => d.UserId == userId).ToListAsync();
+            return await _dbContext.Donations
+                .Where(donation => donation.Donor.UserId == userId).ToListAsync();
+        }
+
+        public IEnumerable<DonationWithDonorNameDto> GetDonationsWithDonorName(int userId)
+        {
+            var donations = _dbContext.Donations
+                .Join(_dbContext.Donors,
+                donation => donation.DonorId,
+                donor => donor.DonorId,
+                (donation, donor) => new { donation, donor })
+                .Where(joined => joined.donor.UserId == userId)
+                .Select(joined => new DonationWithDonorNameDto
+                {
+                    Donation = joined.donation, 
+                    DonorName = joined.donor.FullName
+                }).ToList();
+
+            return donations;
+
         }
 
         public async Task<IEnumerable<Donation>> GetDonationsByDonorIdAsync(int donorId)
@@ -55,7 +76,7 @@ namespace DonationManagmentServer.Repisotories
         public async Task DeleteDonationsAsync(List<int> donationIds)
         {
 
-            var donationList = _dbContext.Donations.Where(d => donationIds.Contains(d.DonorId)).ToList();
+            var donationList = _dbContext.Donations.Where(d => donationIds.Contains(d.DonationId)).ToList();
             if (donationList.Any())
             {
                 _dbContext.Donations.RemoveRange(donationList);

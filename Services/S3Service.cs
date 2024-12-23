@@ -23,12 +23,11 @@ namespace DonationManagmentServer.Services
             );
         }
 
-        public async Task<string> UploadFileAsync(IFormFile file)
+        public async Task<string> UploadFileAsync(int userId,IFormFile file)
         {
             var transferUtility = new TransferUtility(_s3Client);
 
             // Upload the file stream to S3
-            string userId = "12345"; // Example user ID
             string currentMonth = DateTime.Now.Month.ToString();
             string currentYear = DateTime.Now.Year.ToString();
 
@@ -59,7 +58,7 @@ namespace DonationManagmentServer.Services
 
                 return $"https://{_bucketName}.s3.amazonaws.com/{uniqueKey}";
             }
-            //return $"https://{_bucketName}.s3.amazonaws.com/{file.FileName}";
+          
         }
     }
 

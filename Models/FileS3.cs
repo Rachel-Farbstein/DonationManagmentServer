@@ -4,10 +4,8 @@ namespace DonationManagmentServer.Models
 {
 
     [Table("Files")]
-    public class FileDto
+    public class FileS3
     {
-
-        public int DonorId { get; set; }
         public int UserId { get; set; }
         public string FileName { get; set; }
         public string S3FileKey { get; set; }
