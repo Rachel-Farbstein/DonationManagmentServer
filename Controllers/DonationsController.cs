@@ -29,7 +29,7 @@ namespace DonationManagmentServer.Controllers
 
         // GET: api/Donations
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Donation>>> GetDonations()
+        public async Task<ActionResult<IEnumerable<DonationDto>>> GetDonations()
         {
             try
             {
@@ -45,7 +45,7 @@ namespace DonationManagmentServer.Controllers
         }
 
         [HttpGet("get-donations-with-donors")]
-        public async Task<ActionResult<IEnumerable<DonationWithDonorNameDto>>> GetDonationsWithDonors()
+        public async Task<ActionResult<IEnumerable<DonationDtoWithDonorName>>> GetDonationsWithDonors()
         {
             try
             {
@@ -61,16 +61,16 @@ namespace DonationManagmentServer.Controllers
         }
 
         // GET: api/Donations
-        [HttpGet("get-donations-by-donor {id}")]
-        public async Task<ActionResult<IEnumerable<Donation>>> GetDonationsByDonorId(int donorId)
+        [HttpGet("get-donations-by-donor {donorId}")]
+        public async Task<ActionResult<IEnumerable<DonationDto>>> GetDonationsByDonorId(int donorId)
         {
             var donations = await _donationService.GetDonationsByDonorIdAsync(donorId);
             return Ok(donations);
         }
 
         // GET: api/Donations/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Donation>> GetDonation(int donationId)
+        [HttpGet("{donationId}")]
+        public async Task<ActionResult<DonationDto>> GetDonation(int donationId)
         {
             var donation = await _donationService.GetDonationByIdAsync(donationId);
 
@@ -85,16 +85,14 @@ namespace DonationManagmentServer.Controllers
         // PUT: api/Donation/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{donationId}")]
-        public async Task<IActionResult> PutDonation(int donationId, DonationDto donationDto)
+        public async Task<IActionResult> PutDonation(int donationId, [FromBody] DonationDto donationDto)
         {
             if (donationId != donationDto.DonationId)
             {
                 return BadRequest();
             }
 
-            var donation = await this.setDonationFromDonationDto(donationDto);
-
-            await _donationService.UpdateDonationAsync(donation);
+            await _donationService.UpdateDonationAsync(donationDto);
 
             return NoContent();
         }
@@ -102,13 +100,21 @@ namespace DonationManagmentServer.Controllers
         // POST: api/Donations
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Donation>> PostDonation(Donation donation)
+        public async Task<ActionResult> PostDonation([FromBody] DonationDto donationDto)
         {
+            try
+            {
+                await _donationService.AddDonationAsync(donationDto);
 
-            //var donation = await this.setDonationFromDonationDto(donationDto);
-            await _donationService.AddDonationAsync(donation);
+                return CreatedAtAction(nameof(PostDonation), new { id = donationDto.DonationId }, donationDto);
 
-            return CreatedAtAction("GetDonation", new { id = donation.DonationId }, donation);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+
+
         }
 
 
@@ -149,21 +155,5 @@ namespace DonationManagmentServer.Controllers
             return NoContent();
         }
 
-        private async Task<Donation> setDonationFromDonationDto(DonationDto donationDto)
-        {
-            var userId = await _userService.getUserIdByToken(User);
-
-            Donation donation = new Donation()
-            {
-                DonationId = donationDto.DonationId,
-                DonorId = donationDto.DonorId,
-                Amount = donationDto.Amount,
-                DonationDate = donationDto.DonationDate,
-                PaymentType = donationDto.PaymentType,
-                Notes = donationDto.Notes
-            };
-
-            return donation;
-        }
     }
 }

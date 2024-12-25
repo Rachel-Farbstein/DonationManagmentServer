@@ -7,11 +7,11 @@ using Microsoft.OpenApi.Any;
 
 namespace DonationManagmentServer.Repisotories
 {
-    public class DonorRepository
+    public class ReceiptRepository
     {
         private readonly DonationContext _dbContext;
 
-        public DonorRepository(DonationContext dbContext)
+        public ReceiptRepository(DonationContext dbContext)
         {
             _dbContext = dbContext;
         }
