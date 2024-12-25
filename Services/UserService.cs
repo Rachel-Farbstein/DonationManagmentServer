@@ -26,7 +26,7 @@ namespace DonationManagmentServer.Services
                 throw new Exception("User not Found");
             }
 
-            var u = await _userRepository.GetUserByIdAsync(cognitoUserId);
+            var u = await _userRepository.GetUserBycognitoIdAsync(cognitoUserId);
             if (u == null)
             {
                 throw new Exception("User not Found");
@@ -44,15 +44,19 @@ namespace DonationManagmentServer.Services
             await _userRepository.AddUserAsync(user);
         }
 
-        public async Task<User?> GetUserByIdAsync(string cognitoUserId)
+        public async Task<User?> GetUserBycognitoIdAsync(string cognitoUserId)
         {
-            return await _userRepository.GetUserByIdAsync(cognitoUserId);
+            return await _userRepository.GetUserBycognitoIdAsync(cognitoUserId);
         }
 
+        public async Task<User?> GetUserByIdAsync(int userId)
+        {
+            return await _userRepository.GetUserByIdAsync(userId);
+        }
 
         public async Task UpdateUserAsync(User user)
         {
-            var existingUser = await _userRepository.GetUserByIdAsync(user.CognitoUserId);
+            var existingUser = await _userRepository.GetUserBycognitoIdAsync(user.CognitoUserId);
             if (existingUser != null)
             {
                 await _userRepository.UpdateUserAsync(existingUser);
@@ -63,9 +67,9 @@ namespace DonationManagmentServer.Services
             }
         }
 
-        public async Task DeleteUserAsync(string cognitoUserId)
+        public async Task DeleteUserAsync(int userId)
         {
-            await _userRepository.DeleteUserAsync(cognitoUserId);
+            await _userRepository.DeleteUserAsync(userId);
         }
 
     }

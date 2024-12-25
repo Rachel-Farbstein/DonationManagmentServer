@@ -14,33 +14,39 @@ namespace DonationManagmentServer.Repisotories
         }
 
         public async Task<IEnumerable<User>> GetUsers() {
-            return await _dbContext.Users.ToListAsync();
+            return await _dbContext.User.ToListAsync();
         }
 
         public async Task AddUserAsync(User user)
         {
-            _dbContext.Users.Add(user);
+            _dbContext.User.Add(user);
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<User?> GetUserByIdAsync(string cognitoUserId)
+        public async Task<User?> GetUserByIdAsync(int userId)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.CognitoUserId == cognitoUserId);
+            var user = await _dbContext.User.FirstOrDefaultAsync(u => u.Id == userId);
+            return user;
+        }
+
+        public async Task<User?> GetUserBycognitoIdAsync(string cognitoUserId)
+        {
+            var user = await _dbContext.User.FirstOrDefaultAsync(u => u.CognitoUserId == cognitoUserId);
             return user;
         }
 
         public async Task UpdateUserAsync(User user)
         {
-            _dbContext.Users.Update(user);
+            _dbContext.User.Update(user);
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task DeleteUserAsync(string cognitoUserId)
+        public async Task DeleteUserAsync(int userId)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.CognitoUserId == cognitoUserId);
+            var user = await _dbContext.User.FirstOrDefaultAsync(u => u.Id == userId);
             if (user != null)
             {
-                _dbContext.Users.Remove(user);
+                _dbContext.User.Remove(user);
                 await _dbContext.SaveChangesAsync();
             }
         }

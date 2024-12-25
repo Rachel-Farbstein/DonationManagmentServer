@@ -29,6 +29,7 @@ builder.Services.AddScoped<DonationService>();
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<DonorRepository>();
 builder.Services.AddScoped<DonationRepository>();
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 // Add JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

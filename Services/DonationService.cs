@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using AutoMapper;
 using DonationManagmentServer.Models;
 using DonationManagmentServer.Models.DTO;
 using DonationManagmentServer.Repisotories;
@@ -13,39 +14,51 @@ namespace DonationManagmentServer.Services
 
         private readonly DonationRepository _donationRepository;
         private readonly UserService _userService;
-        public DonationService(DonationRepository donationRepository, UserService userService)
+        private readonly IMapper _mapper;
+        public DonationService(
+            DonationRepository donationRepository, 
+            UserService userService,
+            IMapper mapper )
         {
             _donationRepository = donationRepository;
             _userService = userService;
+            _mapper = mapper;
         }
 
 
-        public async Task<IEnumerable<Donation>> GetDonations(int userId)
+        public async Task<IEnumerable<DonationDto>> GetDonations(int userId)
         {
-            return await _donationRepository.GetDonationsAsync(userId);
+       
+            var donations = await _donationRepository.GetDonationsAsync(userId);
+            return donations.Select(d => ConvertDonationToDonationDto(d)).ToList();
         }
 
-        public IEnumerable<DonationWithDonorNameDto> GetDonationsWithDonorName(int userId)
+        public IEnumerable<DonationDtoWithDonorName> GetDonationsWithDonorName(int userId)
         {
-            return _donationRepository.GetDonationsWithDonorName(userId);
+            var donationsWithDonorName =  _donationRepository.GetDonationsWithDonorName(userId);
+            return donationsWithDonorName.Select(d => _mapper.Map<DonationDtoWithDonorName>(d));
         }
 
-        public async Task<Donation?> GetDonationByIdAsync(int donationID)
+        public async Task<DonationDto?> GetDonationByIdAsync(int donationID)
         {
-            return await _donationRepository.GetDonationByIdAsync(donationID);
+            var donation =  await _donationRepository.GetDonationByIdAsync(donationID);
+            return ConvertDonationToDonationDto(donation);
         }
 
-        public async Task<IEnumerable<Donation>> GetDonationsByDonorIdAsync(int donorId)
+        public async Task<IEnumerable<DonationDto>> GetDonationsByDonorIdAsync(int donorId)
         {
-            return await _donationRepository.GetDonationsByDonorIdAsync(donorId);
+            var donations = await _donationRepository.GetDonationsByDonorIdAsync(donorId);
+            return donations.Select(d => ConvertDonationToDonationDto(d)).ToList();
         }
 
-        public async Task AddDonationAsync(Donation donation)
+        public async Task AddDonationAsync(DonationDto donationDto)
         {
+            var donation = ConvertDonationDtoToDonation(donationDto);
             await _donationRepository.AddDonationAsync(donation);
         }
-        public async Task UpdateDonationAsync(Donation donation)
+        public async Task UpdateDonationAsync(DonationDto donationDto)
         {
+            var donation = ConvertDonationDtoToDonation(donationDto);
             await _donationRepository.UpdateDonationAsync(donation);
         }
 
@@ -59,6 +72,14 @@ namespace DonationManagmentServer.Services
             await _donationRepository.DeleteDonationsAsync(donationIds);
         }
 
+        private DonationDto ConvertDonationToDonationDto(Donation? donation)
+        {
+            return _mapper.Map<DonationDto>(donation);
+        }
+        private Donation ConvertDonationDtoToDonation(DonationDto donationDto)
+        {
+            return _mapper.Map<Donation>(donationDto);
+        }
     }
 
 }

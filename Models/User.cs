@@ -13,7 +13,9 @@ namespace DonationManagmentServer.Models
         public DateOnly? CreatedAt { get; set; }
         public bool IsActive { get; set; }
 
-        //public ICollection<Donor> Donors { get; set; }
+
+        public ICollection<Donor> Donors { get; set; } = new List<Donor>();
+        public ICollection<FileS3> Files { get; set; } = new List<FileS3>();
     }
 
 }
