@@ -29,7 +29,7 @@ namespace DonationManagmentServer.Controllers
 
         // GET: api/Donors
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Donor>>> GetDonors()
+        public async Task<ActionResult<IEnumerable<DonorDto>>> GetDonors()
         {
             var userId = await _userService.getUserIdByToken(User);
             var donors = await _donorService.GetDonors(userId);
@@ -38,8 +38,8 @@ namespace DonationManagmentServer.Controllers
 
 
         // GET: api/Donors/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Donor>> GetDonor( int donorId)
+        [HttpGet("{donorId}")]
+        public async Task<ActionResult<DonorDto>> GetDonor(int donorId)
         {
             var donor = await _donorService.GetDonorByIdAsync(donorId);
 
@@ -61,25 +61,39 @@ namespace DonationManagmentServer.Controllers
                 return BadRequest();
             }
 
-            var donor = await this.setDonorFromDonorDto(donorDto);
+            try
+            {
+                var userId = await _userService.getUserIdByToken(User);
+                await _donorService.UpdateDonorAsync(donorDto, userId);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
 
-            await _donorService.UpdateDonorAsync(donor);
 
-            return NoContent();
+
         }
 
         // POST: api/Donors
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Donor>> PostDonor(DonorDto donorDto)
+        public async Task<ActionResult> PostDonor([FromBody] DonorDto donorDto)
         {
+            try
+            {
+                var userId = await _userService.getUserIdByToken(User);
+                await _donorService.AddDonorAsync(donorDto, userId);
+                return CreatedAtAction(nameof(PostDonor), new { id = donorDto.DonorId }, donorDto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
 
-            var donor = await this.setDonorFromDonorDto(donorDto);
-            await _donorService.AddDonorAsync(donor);
 
-            return CreatedAtAction("GetDonor", new { id = donor.DonorId }, donor);
         }
-
 
         [HttpPost("delete-donors")]
         public async Task<IActionResult> DeleteMultipleDonors([FromBody] List<int> donorIds)
@@ -119,21 +133,5 @@ namespace DonationManagmentServer.Controllers
             return NoContent();
         }
 
-        private async Task<Donor> setDonorFromDonorDto(DonorDto donorDto)
-        {
-            var userId = await _userService.getUserIdByToken(User);
-
-            Donor donor = new Donor()
-            {
-                DonorId = donorDto.DonorId,
-                UserId = userId,
-                FullName = donorDto.FullName,
-                Email = donorDto.Email,
-                Address = donorDto.Address,
-                Phone = donorDto.Phone,
-            };
-
-            return donor;
-        }
     }
 }

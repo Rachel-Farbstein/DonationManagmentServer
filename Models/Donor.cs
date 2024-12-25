@@ -1,10 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DonationManagmentServer.Models
 {
     [Table("Donors")]
     public class Donor
     {
+        [Key]
         public int DonorId { get; set; }
         public int UserId { get; set; }
         public string? FullName { get; set; }
@@ -14,6 +16,8 @@ namespace DonationManagmentServer.Models
 
 
         [ForeignKey("UserId")]
-        public User User { get; set; }
+        public User? User { get; set; }
+        public ICollection<Donation>? Donations { get; set; } = new List<Donation>();
+
     }
 }

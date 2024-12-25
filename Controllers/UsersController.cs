@@ -36,7 +36,7 @@ namespace DonationManagmentServer.Controllers
         public async Task<ActionResult<User>> GetUser(string id)
         {
 
-            var user = await _userService.GetUserByIdAsync(id);
+            var user = await _userService.GetUserBycognitoIdAsync(id);
             if (user == null)
                 return NotFound();
 
@@ -82,7 +82,7 @@ namespace DonationManagmentServer.Controllers
 
         // DELETE: api/Users/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(string id)
+        public async Task<IActionResult> DeleteUser(int id)
         {
             //var user = await _context.User.FindAsync(id);
             //if (user == null)
