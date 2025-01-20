@@ -13,7 +13,7 @@ using DonationManagmentServer.Models.DTO;
 
 namespace DonationManagmentServer.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class DonationsController : ControllerBase
@@ -33,7 +33,7 @@ namespace DonationManagmentServer.Controllers
         {
             try
             {
-                var userId = await _userService.getUserIdByToken(User);
+                var userId = await _userService.GetUserIdByToken(User);
                 var donations = await _donationService.GetDonations(userId);
                 return Ok(donations);
             }
@@ -49,7 +49,7 @@ namespace DonationManagmentServer.Controllers
         {
             try
             {
-                var userId = await _userService.getUserIdByToken(User);
+                var userId = await _userService.GetUserIdByToken(User);
                 var donations = _donationService.GetDonationsWithDonorName(userId);
                 return Ok(donations);
             }

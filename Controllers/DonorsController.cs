@@ -13,7 +13,7 @@ using DonationManagmentServer.Models.DTO;
 
 namespace DonationManagmentServer.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class DonorsController : ControllerBase
@@ -31,7 +31,7 @@ namespace DonationManagmentServer.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DonorDto>>> GetDonors()
         {
-            var userId = await _userService.getUserIdByToken(User);
+            var userId = await _userService.GetUserIdByToken(User);
             var donors = await _donorService.GetDonors(userId);
             return Ok(donors);
         }
@@ -63,7 +63,7 @@ namespace DonationManagmentServer.Controllers
 
             try
             {
-                var userId = await _userService.getUserIdByToken(User);
+                var userId = await _userService.GetUserIdByToken(User);
                 await _donorService.UpdateDonorAsync(donorDto, userId);
                 return NoContent();
             }
@@ -83,7 +83,7 @@ namespace DonationManagmentServer.Controllers
         {
             try
             {
-                var userId = await _userService.getUserIdByToken(User);
+                var userId = await _userService.GetUserIdByToken(User);
                 await _donorService.AddDonorAsync(donorDto, userId);
                 return CreatedAtAction(nameof(PostDonor), new { id = donorDto.DonorId }, donorDto);
             }
