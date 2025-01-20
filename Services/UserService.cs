@@ -17,14 +17,9 @@ namespace DonationManagmentServer.Services
             _userRepository = userRepository;
         }
 
-        public async Task<int> getUserIdByToken(ClaimsPrincipal user)
+        public async Task<int> GetUserIdByToken(ClaimsPrincipal user)
         {
-            var cognitoUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(cognitoUserId))
-            {
-                throw new Exception("User not Found");
-            }
+            var cognitoUserId = GetCognitoUserIdByToken(user);
 
             var u = await _userRepository.GetUserBycognitoIdAsync(cognitoUserId);
             if (u == null)
@@ -33,6 +28,17 @@ namespace DonationManagmentServer.Services
             }
 
             return u.Id;
+        }
+
+        public string GetCognitoUserIdByToken(ClaimsPrincipal user)
+        {
+            var cognitoUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(cognitoUserId))
+            {
+                throw new Exception("User not Found");
+            }
+            return cognitoUserId;
         }
         public async Task<IEnumerable<User>> GetUsers()
         {

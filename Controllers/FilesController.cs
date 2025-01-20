@@ -37,8 +37,8 @@ namespace DonationManagmentServer.Controllers
             if (file == null || file.Length == 0)
                 return BadRequest("File is empty");
 
-            var userId = await _userService.getUserIdByToken(User);
-            var uniqueKey = await _s3Service.UploadFileAsync(userId,file);
+            var userId = await _userService.GetUserIdByToken(User);
+            var uniqueKey = await _s3Service.UploadFileAsync("hh", file);
 
             return Ok(new { Key = uniqueKey, Message = "File uploaded successfully!" });
 

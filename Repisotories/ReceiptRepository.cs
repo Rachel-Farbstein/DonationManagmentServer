@@ -16,62 +16,81 @@ namespace DonationManagmentServer.Repisotories
             _dbContext = dbContext;
         }
 
-        public async Task<IEnumerable<Donor>> GetDonors(int userId)
+        public async Task<IEnumerable<Receipt>> GetReceipts(int userId)
         {
-            return await _dbContext.Donor.Where(d => d.UserId == userId).ToListAsync();
+            return await _dbContext.Receipt
+              .Where(receipt => receipt.Donation.Donor.UserId == userId).ToListAsync();
         }
 
-        public async Task AddDonorAsync(Donor donor)
+        public async Task AddReceiptAsync(Receipt receipt, FileS3 fileS3)
         {
-           var newDonor = _dbContext.Donor.Add(donor);
-           await _dbContext.SaveChangesAsync();
+
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            try
+            {
+                // שמירת קובץ
+                _dbContext.File.Add(fileS3);
+                await _dbContext.SaveChangesAsync();
+
+                // שמירת קבלה
+                receipt.FileID = fileS3.FileId;
+                _dbContext.Receipt.Add(receipt);
+                await _dbContext.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
-        public async Task<Donor?> GetDonorByIdAsync(int donorId)
+        public async Task<Receipt?> GetReceiptByIdAsync(int receiptId)
         {
-            return await _dbContext.Donor.FirstOrDefaultAsync(d => d.DonorId == donorId);
+            return await _dbContext.Receipt.FirstOrDefaultAsync(r => r.ReceiptID == receiptId);
         }
 
-        public async Task UpdateDonorAsync(Donor donor)
+        public async Task UpdateReceiptAsync(Receipt receipt)
         {
-            _dbContext.Donor.Update(donor);
+            _dbContext.Receipt.Update(receipt);
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task DeleteDonorAsync(int id)
+        public async Task DeleteReceiptAsync(int receiptID)
         {
 
-            var donor = await _dbContext.Donor
-                .Include(d => d.Donations)
-                .FirstOrDefaultAsync(d => d.DonorId == id);
+            var receipt = await _dbContext.Receipt
+                .Include(r => r.FileS3)
+                .FirstOrDefaultAsync(r => r.ReceiptID == receiptID);
 
-            if (donor != null)
+            if (receipt != null)
             {
-                if (donor.Donations != null)
+                if (receipt.FileS3 != null)
                 {
-                    _dbContext.Donation.RemoveRange(donor.Donations);
+                    _dbContext.File.Remove(receipt.FileS3);
                 }
-                _dbContext.Donor.Remove(donor);
+                _dbContext.Receipt.Remove(receipt);
                 await _dbContext.SaveChangesAsync();
             }
         }
 
-        public async Task DeleteDonorsAsync(List<int> donorIds)
+        public async Task DeleteReceiptsAsync(List<int> receiptIds)
         {
 
-            var donorList = _dbContext.Donor
-                .Where(d => donorIds.Contains(d.DonorId))
-                .Include(d => d.Donations)
+            var receiptList = _dbContext.Receipt
+                .Where(r => receiptIds.Contains(r.ReceiptID))
+                .Include(r => r.FileS3)
                 .ToList();
-            if (donorList.Any())
+            if (receiptList.Any())
             {
-                var donationsToRemove = donorList.SelectMany(d => d.Donations).ToList();
-                if (!donationsToRemove.Any())
+                var fileToRemove = receiptList.Select(r => r.FileS3).ToList();
+                if (!fileToRemove.Any())
                 {
-                    _dbContext.Donation.RemoveRange(donationsToRemove);
+                    _dbContext.File.RemoveRange(fileToRemove);
                 }
 
-                _dbContext.Donor.RemoveRange(donorList);
+                _dbContext.Receipt.RemoveRange(receiptList);
                 await _dbContext.SaveChangesAsync();
             }
 

@@ -26,9 +26,12 @@ builder.Services.AddScoped<S3Service>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<DonorService>();
 builder.Services.AddScoped<DonationService>();
+builder.Services.AddScoped<ReceiptService>();
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<DonorRepository>();
 builder.Services.AddScoped<DonationRepository>();
+builder.Services.AddScoped<ReceiptRepository>();
+builder.Services.AddScoped<FileRepository>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 // Add JWT

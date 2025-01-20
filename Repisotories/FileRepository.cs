@@ -6,11 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DonationManagmentServer.Repisotories
 {
-    public class FileS3Repository
+    public class FileRepository
     {
         private readonly DonationContext _dbContext;
 
-        public FileS3Repository(DonationContext dbContext)
+        public FileRepository(DonationContext dbContext)
         {
             _dbContext = dbContext;
         }

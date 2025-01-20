@@ -14,6 +14,8 @@ namespace DonationManagmentServer.Services
             CreateMap<DonationDto, Donation>();
             CreateMap<DonationWithDonorName, DonationDtoWithDonorName>();
             CreateMap<DonationDtoWithDonorName, DonationWithDonorName>();
+            CreateMap<Receipt, ReceiptDto>();
+            CreateMap<ReceiptDto, Receipt>();
         }
     }
 }
