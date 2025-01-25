@@ -2,8 +2,9 @@
 {
     public class FileS3Dto
     {
-        public string UniqueKey { get; set; }
-        public string FileUrl { get; set; }
-        public string BucketName { get; set; }
+        public required string S3FileKey { get; set; }
+        public required string S3FileUrl { get; set; }
+        public required string S3BucketName { get; set; }
+
     }
 }

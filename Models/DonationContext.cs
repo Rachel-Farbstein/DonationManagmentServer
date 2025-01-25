@@ -14,12 +14,8 @@ namespace DonationManagmentServer.Models
         public DbSet<User> User { get; set; } = default!;
         public DbSet<Donor> Donor { get; set; } = default!;
         public DbSet<Donation> Donation { get; set; } = default!;
-        public DbSet<FileS3> File { get; set; } = default!;
+        public DbSet<FileDetails> FileDetails { get; set; } = default!;
         public DbSet<Receipt> Receipt { get; set; } = default!;
-
-        //public DbSet<DonationManagmentServer.Models.User> User { get; set; } = default!;
-        //public DbSet<DonationManagmentServer.Models.Donor> Donor { get; set; } = default!;
-        //public DbSet<DonationManagmentServer.Models.Donation> Donation { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -29,7 +25,7 @@ namespace DonationManagmentServer.Models
             modelBuilder.Entity<User>().HasKey(u => u.Id);
             modelBuilder.Entity<Donor>().HasKey(d => d.DonorId);
             modelBuilder.Entity<Donation>().HasKey(d => d.DonationId);
-            modelBuilder.Entity<FileS3>().HasKey(f => f.FileId);
+            modelBuilder.Entity<FileDetails>().HasKey(f => f.FileId);
             modelBuilder.Entity<Receipt>().HasKey(r => r.ReceiptID);
 
 
@@ -44,10 +40,16 @@ namespace DonationManagmentServer.Models
                 .HasForeignKey(d => d.DonorId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<FileS3>()
-                .HasOne(f => f.User)
-                .WithMany(u => u.Files)
-                .HasForeignKey(f => f.UserId);
+            modelBuilder.Entity<Donation>()
+                .HasOne(d => d.FileDetails)
+                .WithMany()
+       .         HasForeignKey(d => d.FileId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<FileDetails>()
+                .HasOne(f => f.User);
+            //.WithMany(u => u.Files)
+            //.HasForeignKey(f => f.UserId);
 
             modelBuilder.Entity<Receipt>()
                 .HasOne(r => r.Donation)
@@ -55,7 +57,7 @@ namespace DonationManagmentServer.Models
                 .HasForeignKey(r => r.DonationID);
 
             modelBuilder.Entity<Receipt>()
-                .HasOne(r => r.FileS3)
+                .HasOne(r => r.FileDetails)
                 .WithMany(f => f.Receipts)
                 .HasForeignKey(r => r.FileID);
 

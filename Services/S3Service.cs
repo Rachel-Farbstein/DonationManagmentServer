@@ -3,6 +3,7 @@ using Amazon;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
+using Azure;
 using DonationManagmentServer.Models.DTO;
 using Microsoft.CodeAnalysis;
 
@@ -56,9 +57,9 @@ namespace DonationManagmentServer.Services
 
                 var fileS3Dto = new FileS3Dto
                 {
-                    UniqueKey = uniqueKey,
-                    FileUrl = $"https://{_bucketName}.s3.amazonaws.com/{uniqueKey}",
-                    BucketName = _bucketName
+                    S3FileKey = uniqueKey,
+                    S3FileUrl = $"https://{_bucketName}.s3.amazonaws.com/{uniqueKey}",
+                    S3BucketName = _bucketName
                 };
                 // Upload to S3
                 try
@@ -81,6 +82,42 @@ namespace DonationManagmentServer.Services
 
             }
 
+        }
+
+        public async Task<GetObjectResponse> GetFileAsync(string bucketName, string fileKey)
+        {
+            var request = new GetObjectRequest
+            {
+                BucketName = bucketName,
+                Key = fileKey
+            };
+
+            GetObjectResponse response = new GetObjectResponse();
+
+            try
+
+            {
+                response = await _s3Client.GetObjectAsync(request);
+                return response;
+            }
+            catch (AmazonS3Exception ex) when (ex.StatusCode == (System.Net.HttpStatusCode)418)
+            {
+                Console.WriteLine($"Ignored 418 error during S3 upload: {ex.Message}");
+                if (response != null)
+                    return response;
+                else
+                {
+                    Console.WriteLine($"An unexpected error occurred: {ex.Message}");
+                    throw;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                // Handle other exceptions
+                Console.WriteLine($"An unexpected error occurred: {ex.Message}");
+                throw;
+            }
         }
     }
 

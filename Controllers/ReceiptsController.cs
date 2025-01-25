@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using DonationManagmentServer.Models.DTO;
 using DonationManagmentServer.Repisotories;
 using System.Text.Json;
+using Azure;
 
 namespace DonationManagmentServer.Controllers
 {
@@ -38,6 +39,27 @@ namespace DonationManagmentServer.Controllers
             return Ok(receipts);
         }
 
+        [HttpGet("get-receipts-with-files")]
+        public async Task<ActionResult<IEnumerable<ReceiptWithFileDto>>> GetReceiptsWithFileDetails()
+        {
+            var userId = await _userService.GetUserIdByToken(User);
+            var receipts = await _receiptService.GetReceiptsWithFiles(userId);
+            return Ok(receipts);
+        }
+
+        [HttpGet("{receiptId}/file-s3")]
+        public async Task<ActionResult> GetFileFromS3(int receiptId)
+        {
+            var fileS3 = await _receiptService.GetFileFromS3(receiptId);
+
+            using var memoryStream = new MemoryStream();
+            await fileS3.ResponseStream.CopyToAsync(memoryStream);
+            var fileBytes = memoryStream.ToArray();
+
+            return File(fileBytes, fileS3.Headers["Content-Type"]);
+            //return Ok(fileS3);
+        }
+
         // POST: api/Receipts
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
@@ -48,11 +70,6 @@ namespace DonationManagmentServer.Controllers
             if (file == null || receiptDto == null) //string.IsNullOrEmpty(receiptData)
                 return BadRequest("File or receipt data is missing.");
 
-            //var receiptDto = JsonSerializer.Deserialize<ReceiptDto>(receiptData);
-            //if (receiptDto == null)
-            //{
-            //    return BadRequest("File or receipt data is missing.");
-            //}
             receiptDto.File = file;
             try
             {

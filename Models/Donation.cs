@@ -9,6 +9,7 @@ namespace DonationManagmentServer.Models
         [Key]
         public int DonationId { get; set; }
         public int DonorId { get; set; }
+        public int? FileId { get; set; }
         public DateTime DonationDate { get; set; }
         public decimal Amount { get; set; }
         public PaymentType PaymentType { get; set; }
@@ -17,6 +18,9 @@ namespace DonationManagmentServer.Models
 
         [ForeignKey("DonorId")]
         public Donor Donor { get; set; }
+
+        [ForeignKey("FileId")]
+        public FileDetails? FileDetails { get; set; }
         public ICollection<Receipt> Receipts { get; set; } = new List<Receipt>();
     }
 

@@ -8,14 +8,12 @@ namespace DonationManagmentServer.Services
     {
         public MappingProfile()
         {
-            CreateMap<Donor, DonorDto>();
-            CreateMap<DonorDto, Donor>();
-            CreateMap<Donation, DonationDto>();
-            CreateMap<DonationDto, Donation>();
-            CreateMap<DonationWithDonorName, DonationDtoWithDonorName>();
-            CreateMap<DonationDtoWithDonorName, DonationWithDonorName>();
-            CreateMap<Receipt, ReceiptDto>();
-            CreateMap<ReceiptDto, Receipt>();
+            CreateMap<Donor, DonorDto>().ReverseMap();
+            CreateMap<Donation, DonationDto>().ReverseMap();
+            CreateMap<DonationWithDonorName, DonationDtoWithDonorName>().ReverseMap();
+            CreateMap<Receipt, ReceiptDto>().ReverseMap();
+            CreateMap<FileDetails,FileDetailsDto>().ReverseMap();
+            CreateMap<ReceiptWithFile, ReceiptWithFileDto>().ReverseMap();
         }
     }
 }
