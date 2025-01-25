@@ -26,6 +26,7 @@ namespace DonationManagmentServer.Repisotories
         public IEnumerable<DonationWithDonorName> GetDonationsWithDonorName(int userId)
         {
             var donations = _dbContext.Donation
+                .Include(d => d.FileDetails)
                 .Join(_dbContext.Donor,
                 donation => donation.DonorId,
                 donor => donor.DonorId,
@@ -34,7 +35,8 @@ namespace DonationManagmentServer.Repisotories
                 .Select(joined => new DonationWithDonorName
                 {
                     Donation = joined.donation, 
-                    DonorName = joined.donor.FullName
+                    DonorName = joined.donor.FullName,
+                    FileDetails = joined.donation.FileDetails,
                 }).ToList();
 
             return donations;

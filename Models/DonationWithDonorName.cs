@@ -6,6 +6,7 @@ namespace DonationManagmentServer.Models.DTO
     {
         public Donation? Donation { get; set; }
         public string? DonorName { get; set; }
+        public FileDetails? FileDetails { get; set; }
     }
 
 }
