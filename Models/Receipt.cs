@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using DonationManagmentServer.Models.DTO;
 
 namespace DonationManagmentServer.Models
 {
@@ -15,7 +16,7 @@ namespace DonationManagmentServer.Models
         public Donation Donation { get; set; }
 
         [ForeignKey("FileID")]
-        public FileS3 FileS3 { get; set; }
+        public FileDetails FileDetails { get; set; }
 
     }
 }

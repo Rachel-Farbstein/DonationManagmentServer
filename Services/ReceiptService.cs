@@ -2,6 +2,7 @@
 using System.Net;
 using Amazon.Runtime.Internal;
 using Amazon.S3;
+using Amazon.S3.Model;
 using AutoMapper;
 using Azure.Core;
 using DonationManagmentServer.Models;
@@ -38,6 +39,39 @@ namespace DonationManagmentServer.Services
             return receipts.Select(r => _mapper.Map<ReceiptDto>(r)).ToList();
         }
 
+        public async Task<IEnumerable<ReceiptWithFileDto>> GetReceiptsWithFiles(int userId)
+        {
+            var receipts = await _receiptRepository.GetReceiptsWithFiles(userId);
+            return receipts.Select(r =>
+                  new ReceiptWithFileDto
+                  {
+                      ReceiptDto = _mapper.Map<ReceiptDto>(r.Receipt),
+                      FileDetailsDto = _mapper.Map<FileDetailsDto>(r.FileDetails)
+                  }).ToList();
+
+            //return receipts.Select(r => _mapper.Map<ReceiptWithFileDto>(r)).ToList();
+        }
+
+        public async Task<GetObjectResponse?> GetFileFromS3(int receiptId)
+        {
+            var fileDetails = await _receiptRepository.GetFileDetailsByReceiptId(receiptId);
+            if (fileDetails != null)
+            {
+                try
+                {
+                    var fileS3 = await _s3Service.GetFileAsync(fileDetails.S3BucketName, fileDetails.S3FileKey);
+                    return fileS3;
+                }
+                catch (Exception ex)
+                {
+
+                    throw;
+                }
+
+            }
+            return null;
+        }
+
         //public async Task<DonorDto?> GetDonorByIdAsync(int donorId)
         //{
         //    var d =  await _donorRepository.GetDonorByIdAsync(donorId);
@@ -57,13 +91,13 @@ namespace DonationManagmentServer.Services
             {
                 var fileS3Dto = _s3Service.UploadFileAsync(congitoUserId, receiptDto.File);
 
-                var fileS3 = new FileS3
+                var fileDeatils = new FileDetails
                 {
                     UserId = userId,
                     FileName = receiptDto.File.FileName,
-                    S3FileKey = fileS3Dto.Result.UniqueKey,
-                    S3FileUrl = fileS3Dto.Result.FileUrl,
-                    S3BucketName = fileS3Dto.Result.BucketName,
+                    S3FileKey = fileS3Dto.Result.S3FileKey,
+                    S3FileUrl = fileS3Dto.Result.S3FileUrl,
+                    S3BucketName = fileS3Dto.Result.S3BucketName,
                     ContentType = receiptDto.File.ContentType,
                     FileSize = receiptDto.File.Length,
                     UploadedAt = DateTime.UtcNow,
@@ -72,7 +106,7 @@ namespace DonationManagmentServer.Services
 
                 //await _fileRepository.AddFileAsync(fileS3);
                 var receipt = _mapper.Map<Receipt>(receiptDto);
-                await _receiptRepository.AddReceiptAsync(receipt , fileS3);
+                await _receiptRepository.AddReceiptAsync(receipt, fileDeatils);
             }
             catch (Exception)
             {

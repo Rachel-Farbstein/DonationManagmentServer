@@ -6,6 +6,7 @@ namespace DonationManagmentServer.Models.DTO
     {
         public int DonationId { get; set; }
         public int DonorId { get; set; }
+        public int? FileId { get; set; }
         public DateTime DonationDate { get; set; }
         public decimal Amount { get; set; }
         public PaymentType PaymentType { get; set; }
