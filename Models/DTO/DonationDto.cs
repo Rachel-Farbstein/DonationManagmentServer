@@ -11,6 +11,7 @@ namespace DonationManagmentServer.Models.DTO
         public decimal Amount { get; set; }
         public PaymentType PaymentType { get; set; }
         public string? Notes { get; set; }
+        public IFormFile? File { get; set; }
     }
 
 }

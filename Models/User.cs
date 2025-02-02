@@ -15,7 +15,7 @@ namespace DonationManagmentServer.Models
 
 
         public ICollection<Donor> Donors { get; set; } = new List<Donor>();
-        public ICollection<FileDetails> Files { get; set; } = new List<FileDetails>();
+        public ICollection<FileDetails> FilesDetails { get; set; } = new List<FileDetails>();
     }
 
 }

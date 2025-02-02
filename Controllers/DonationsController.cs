@@ -82,6 +82,23 @@ namespace DonationManagmentServer.Controllers
             return donation;
         }
 
+        [HttpGet("amount-by-month")]
+        public async Task<ActionResult<TotalAmountMonth>> GetDonationsAmtByMonth()
+        {
+            var userId = await _userService.GetUserIdByToken(User);
+            var donations = await _donationService.GetDonationsAmtByMonth(userId);
+            return Ok(donations);
+        }
+
+        [HttpGet("amount-for-donors")]
+        public async Task<ActionResult<IEnumerable<DonorTotalAmount>>> GetDonationsAmtByDonors()
+        {
+            var userId = await _userService.GetUserIdByToken(User);
+            var donorsAndAmt = await _donationService.GetDonationsAmtByDonors(userId);
+            return Ok(donorsAndAmt);
+        }
+
+
         // PUT: api/Donation/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{donationId}")]
@@ -95,6 +112,16 @@ namespace DonationManagmentServer.Controllers
             await _donationService.UpdateDonationAsync(donationDto);
 
             return NoContent();
+        }
+
+        [HttpPut("add-file-do-donation")]
+        public async Task<ActionResult<FileDetailsDto>> PutFileToDonation([FromForm] DonationDto donationDto)
+        {
+            var userId = await _userService.GetUserIdByToken(User);
+            var cognitoUserId = _userService.GetCognitoUserIdByToken(User);
+            var fileDetailsDto = await _donationService.AddFileToDonation(donationDto.DonationId, donationDto.File, userId, cognitoUserId);
+
+            return CreatedAtAction(nameof(PostDonation), new { id = fileDetailsDto.FileId }, fileDetailsDto);
         }
 
         // POST: api/Donations
@@ -152,6 +179,14 @@ namespace DonationManagmentServer.Controllers
 
             await _donationService.DeleteDonationAsync(donationId);
 
+            return NoContent();
+        }
+
+        // DELETE: api/Donations/5
+        [HttpDelete("{donationId}/delete-donation-file")]
+        public async Task<IActionResult> DeleteDonationFile(int donationId)
+        {
+            await _donationService.DeleteDonationFile(donationId);
             return NoContent();
         }
 

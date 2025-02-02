@@ -12,11 +12,11 @@ namespace DonationManagmentServer.Models
         public int FileID { get; set; }
         public DateTime ReceiptProductionDate { get; set; }
 
-        [ForeignKey("DonationID")]
-        public Donation Donation { get; set; }
+        //[ForeignKey("DonationID")]
+        //public Donation Donation { get; set; }
 
-        [ForeignKey("FileID")]
-        public FileDetails FileDetails { get; set; }
+        //[ForeignKey("FileID")]
+        //public FileDetails FileDetails { get; set; }
 
     }
 }

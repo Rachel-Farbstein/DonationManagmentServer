@@ -28,7 +28,6 @@ namespace DonationManagmentServer.Models
             modelBuilder.Entity<FileDetails>().HasKey(f => f.FileId);
             modelBuilder.Entity<Receipt>().HasKey(r => r.ReceiptID);
 
-
             modelBuilder.Entity<Donor>()
                 .HasOne(d => d.User)
                 .WithMany(u => u.Donors)
@@ -41,25 +40,26 @@ namespace DonationManagmentServer.Models
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Donation>()
-                .HasOne(d => d.FileDetails)
-                .WithMany()
-       .         HasForeignKey(d => d.FileId)
-                .OnDelete(DeleteBehavior.Cascade);
+              .HasOne(d => d.FileDetails)
+              .WithOne(fd => fd.Donation)
+              .HasForeignKey<Donation>(d => d.FileId)
+              .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<FileDetails>()
-                .HasOne(f => f.User);
-            //.WithMany(u => u.Files)
-            //.HasForeignKey(f => f.UserId);
+                .HasOne(f => f.User)
+                .WithMany(u => u.FilesDetails)
+                .HasForeignKey(f => f.UserId);
 
-            modelBuilder.Entity<Receipt>()
-                .HasOne(r => r.Donation)
-                .WithMany(d => d.Receipts)
-                .HasForeignKey(r => r.DonationID);
+            //modelBuilder.Entity<Receipt>()
+            //    .HasOne(r => r.Donation)
+            //    .WithOne(d => d.Receipt)
+            //    .HasForeignKey<Donation>(d => d.DonationId)
+            //    .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<Receipt>()
-                .HasOne(r => r.FileDetails)
-                .WithMany(f => f.Receipts)
-                .HasForeignKey(r => r.FileID);
+            //modelBuilder.Entity<Receipt>()
+            //    .HasOne(r => r.FileDetails)
+            //    .WithMany(f => f.Receipts)
+            //    .HasForeignKey(r => r.FileID);
 
         }
 

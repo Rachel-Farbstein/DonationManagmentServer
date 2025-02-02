@@ -21,7 +21,6 @@ namespace DonationManagmentServer.Models
 
         [ForeignKey("FileId")]
         public FileDetails? FileDetails { get; set; }
-        public ICollection<Receipt> Receipts { get; set; } = new List<Receipt>();
     }
 
 }

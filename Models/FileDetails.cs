@@ -19,7 +19,8 @@ namespace DonationManagmentServer.Models
 
         [ForeignKey("UserId")]
         public User User { get; set; }
-        public ICollection<Receipt> Receipts { get; set; } = new List<Receipt>();
+        public Donation? Donation { get; set; } 
+
 
     }
 }

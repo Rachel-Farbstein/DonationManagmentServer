@@ -21,22 +21,29 @@ namespace DonationManagmentServer.Repisotories
 
         public async Task<IEnumerable<Receipt>> GetReceipts(int userId)
         {
-            return await _dbContext.Receipt
-              .Where(receipt => receipt.Donation.Donor.UserId == userId).ToListAsync();
+            return null;
+            //return await _dbContext.Receipt
+            //  .Where(receipt => receipt.Donation.Donor.UserId == userId).ToListAsync();
         }
 
         public async Task<IEnumerable<ReceiptWithFile>> GetReceiptsWithFiles(int userId)
         {
             var receipts = await _dbContext.Receipt
-                .Join(_dbContext.FileDetails,
-                      receipt => receipt.FileID,
-                      fileDetails => fileDetails.FileId,
-                      (receipt, fileDetails) => new ReceiptWithFile
-                      {
-                          Receipt = receipt,
-                          FileDetails = fileDetails,
-                      })
-                .Where(joined => joined.Receipt.Donation.Donor.UserId == userId).ToListAsync();
+                .Select( r => new ReceiptWithFile
+                {
+                    Receipt = r,
+                    FileDetails = null
+                })
+                .ToListAsync();
+                //.Join(_dbContext.FileDetails,
+                //      receipt => receipt.FileID,
+                //      fileDetails => fileDetails.FileId,
+                //      (receipt, fileDetails) => new ReceiptWithFile
+                //      {
+                //          Receipt = receipt,
+                //          FileDetails = fileDetails,
+                //      })
+                //.Where(joined => joined.Receipt.Donation.Donor.UserId == userId).ToListAsync();
 
             return receipts;
 
@@ -73,9 +80,10 @@ namespace DonationManagmentServer.Repisotories
 
         public async Task<FileDetails?> GetFileDetailsByReceiptId(int receiptId)
         {
-            var rec =  await _dbContext.Receipt.Include(r => r.FileDetails)
-                                           .FirstOrDefaultAsync(r => r.ReceiptID == receiptId);
-            return rec?.FileDetails;
+            //    var rec =  await _dbContext.Receipt.Include(r => r.FileDetails)
+            //                                   .FirstOrDefaultAsync(r => r.ReceiptID == receiptId);
+            //    return rec?.FileDetails;
+            return null;
         }
 
         public async Task UpdateReceiptAsync(Receipt receipt)
@@ -88,15 +96,15 @@ namespace DonationManagmentServer.Repisotories
         {
 
             var receipt = await _dbContext.Receipt
-                .Include(r => r.FileDetails)
+                //.Include(r => r.FileDetails)
                 .FirstOrDefaultAsync(r => r.ReceiptID == receiptID);
 
             if (receipt != null)
             {
-                if (receipt.FileDetails != null)
-                {
-                    _dbContext.FileDetails.Remove(receipt.FileDetails);
-                }
+                //if (receipt.FileDetails != null)
+                //{
+                //    _dbContext.FileDetails.Remove(receipt.FileDetails);
+                //}
                 _dbContext.Receipt.Remove(receipt);
                 await _dbContext.SaveChangesAsync();
             }
@@ -107,15 +115,15 @@ namespace DonationManagmentServer.Repisotories
 
             var receiptList = _dbContext.Receipt
                 .Where(r => receiptIds.Contains(r.ReceiptID))
-                .Include(r => r.FileDetails)
+                //.Include(r => r.FileDetails)
                 .ToList();
             if (receiptList.Any())
             {
-                var fileToRemove = receiptList.Select(r => r.FileDetails).ToList();
-                if (!fileToRemove.Any())
-                {
-                    _dbContext.FileDetails.RemoveRange(fileToRemove);
-                }
+                //var fileToRemove = receiptList.Select(r => r.FileDetails).ToList();
+                //if (!fileToRemove.Any())
+                //{
+                //    _dbContext.FileDetails.RemoveRange(fileToRemove);
+                //}
 
                 _dbContext.Receipt.RemoveRange(receiptList);
                 await _dbContext.SaveChangesAsync();

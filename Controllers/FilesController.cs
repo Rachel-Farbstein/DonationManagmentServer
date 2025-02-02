@@ -2,11 +2,14 @@
 using Amazon;
 using Amazon.S3;
 using Amazon.S3.Transfer;
+using DonationManagmentServer.Models;
 using DonationManagmentServer.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DonationManagmentServer.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class FilesController : ControllerBase
@@ -42,6 +45,18 @@ namespace DonationManagmentServer.Controllers
 
             return Ok(new { Key = uniqueKey, Message = "File uploaded successfully!" });
 
+        }
+        [HttpGet("get-file-from-s3")]
+        //public async Task<ActionResult> GetFileFromS3([FromBody] FileDetails fileDetails)
+        public async Task<ActionResult> GetFileFromS3([FromQuery] string bucketName, [FromQuery] string key)
+        {
+            var fileS3 = await _s3Service.GetFileAsync(bucketName, key);
+
+            using var memoryStream = new MemoryStream();
+            await fileS3.ResponseStream.CopyToAsync(memoryStream);
+            var fileBytes = memoryStream.ToArray();
+
+            return File(fileBytes, fileS3.Headers["Content-Type"]);
         }
 
         //public async Task SaveFileMetadata(string fileName, string fileUrl, int userId = 0)
